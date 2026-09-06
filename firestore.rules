@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    // 1. Users collection: users can only read/update their own profile
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 2. Subjects collection: read by all, managed by admin
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 3. Tests collection: read published tests, managed by admin
+    match /tests/{testId} {
+      allow read: if resource.data.is_published == true || resource.data.isPublished == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // 4. Questions collection: STRICT EXAM SECURITY
+    // Correct answers must NEVER be accessible directly by students via Firestore client.
+    // Client-side access is restricted to Admins only. Students receive sanitized questions via server / Cloud Functions.
+    match /questions/{questionId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 5. Test Attempts collection: student submissions
+    match /test_attempts/{attemptId} {
+      allow read: if isOwner(resource.data.userId) || isOwner(resource.data.user_id) || isAdmin();
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || request.resource.data.user_id == request.auth.uid);
+      allow update: if (isOwner(resource.data.userId) || isOwner(resource.data.user_id)) && resource.data.status != 'completed' || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 6. Student Answers collection: breakdown of each answer
+    match /student_answers/{answerId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.user_id == request.auth.uid || 
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid || 
+        request.resource.data.user_id == request.auth.uid
+      );
+      allow update, delete: if isAdmin();
+    }
+  }
+}

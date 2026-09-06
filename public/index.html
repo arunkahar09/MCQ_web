@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizMaster - Online MCQ Testing Platform</title>
+  <meta name="description" content="Secure, timed online multiple-choice exams with automated scoring, question-by-question breakdown, and student performance tracking.">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+
+  <!-- ==========================================
+       HEADER & NAVIGATION BAR
+       ========================================== -->
+  <header class="navbar" id="app-navbar">
+    <a href="#/home" class="brand-logo" data-target-view="view-home">
+      <div class="brand-icon">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <div class="brand-text">Quiz<span>Master</span></div>
+    </a>
+
+    <!-- Student Navigation Links -->
+    <ul class="nav-links" id="nav-student-links" style="display: none;">
+      <li><a href="#/subjects" class="nav-link" data-target-view="view-student-subjects"><i class="fas fa-layer-group"></i> Subjects</a></li>
+      <li><a href="#/history" class="nav-link" data-target-view="view-student-history"><i class="fas fa-history"></i> My Results</a></li>
+    </ul>
+
+    <!-- Admin Navigation Links -->
+    <ul class="nav-links" id="nav-admin-links" style="display: none;">
+      <li><a href="#/admin" class="nav-link" data-target-view="view-admin"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>
+      <li><a href="#/subjects" class="nav-link" data-target-view="view-student-subjects"><i class="fas fa-eye"></i> Student View</a></li>
+    </ul>
+
+    <!-- Navigation Actions -->
+    <div class="nav-actions">
+      <!-- Theme Switcher -->
+      <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+        <i class="fas fa-sun"></i>
+      </button>
+
+      <!-- Guest Login / Signup Buttons -->
+      <div id="nav-guest-actions" style="display: flex; gap: 0.5rem;">
+        <button class="btn btn-secondary btn-sm" onclick="App.showAuthModal('login')">
+          <i class="fas fa-sign-in-alt"></i> Log In
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="App.showAuthModal('signup')">
+          <i class="fas fa-user-plus"></i> Sign Up
+        </button>
+      </div>
+
+      <!-- Logged-in User Profile Dropdown -->
+      <div id="nav-user-actions" style="display: none; align-items: center; gap: 0.6rem;">
+        <div id="nav-user-display" class="meta-badge" style="background: var(--bg-card); color: var(--text-main); font-weight: 600;">
+          <i class="fas fa-user"></i> <span>User</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="Auth.logout()" title="Logout">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN APP CONTAINER
+       ========================================== -->
+  <main class="app-container">
+
+    <!-- Active Attempt Resumption Banner -->
+    <div id="active-attempt-banner" class="active-attempt-banner" style="display: none;">
+      <div>
+        <i class="fas fa-clock" style="color: var(--warning); margin-right: 0.4rem;"></i>
+        <span>You have an ongoing test: <strong id="active-banner-test-name">Test</strong></span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="Exam.resumeActiveTest()">
+        <i class="fas fa-play"></i> Resume Test
+      </button>
+    </div>
+
+    <!-- 1. VIEW: PUBLIC HOME / HERO -->
+    <section id="view-home" class="view-section active">
+      <div class="hero-banner">
+        <div class="hero-badge">
+          <i class="fas fa-shield-alt"></i> Secure Online Assessment System
+        </div>
+        <h1 class="hero-title">Practice Timed Multiple Choice Exams</h1>
+        <p class="hero-subtitle">
+          Test your knowledge with subject-specific timed quizzes, receive instant server-evaluated scoring, and review detailed question breakdowns.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" onclick="App.handleGetStarted()">
+            <i class="fas fa-arrow-right"></i> Browse Subjects
+          </button>
+          <button class="btn btn-secondary btn-lg" onclick="App.showAuthModal('login')">
+            <i class="fas fa-sign-in-alt"></i> Student Sign In
+          </button>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-stopwatch"></i></div>
+            <h3>Countdown Timers</h3>
+            <p>Accurate time tracking with automated submission upon countdown expiration.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+            <h3>Exam Security</h3>
+            <p>Answer keys are never exposed in the browser; scores are computed securely on the backend.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
+            <h3>Instant Breakdown</h3>
+            <p>Immediate performance evaluation with correct, wrong, and skipped question reviews.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-sliders"></i></div>
+            <h3>Admin Portal</h3>
+            <p>Comprehensive subject, test, 4-option question, and submission management tools.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. VIEW: STUDENT SUBJECTS / CATEGORIES -->
+    <section id="view-student-subjects" class="view-section">
+      <div class="section-header">
+        <h2 class="section-title">Subjects & Categories</h2>
+        <p class="section-subtitle">Select a subject below to view available tests and practice assessments.</p>
+      </div>
+
+      <div class="subjects-grid" id="subjects-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- 3. VIEW: SUBJECT TESTS LISTING -->
+    <section id="view-subject-tests" class="view-section">
+      <div class="section-header">
+        <button class="btn btn-secondary btn-sm" onclick="App.showView('view-student-subjects'); location.hash='#/subjects';" style="margin-bottom: 0.75rem;">
+          <i class="fas fa-arrow-left"></i> Back to Subjects
+        </button>
+        <h2 class="section-title" id="subject-tests-title">Available Tests</h2>
+        <p class="section-subtitle" id="subject-tests-desc">Choose a test to begin your assessment.</p>
+      </div>
+
+      <div class="tests-grid" id="tests-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- 4. VIEW: TEST INSTRUCTIONS -->
+    <section id="view-test-instructions" class="view-section">
+      <div class="instructions-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+          <span class="meta-badge" id="inst-subject-name">Subject</span>
+          <button class="btn btn-secondary btn-sm" onclick="App.showView('view-subject-tests')">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+        </div>
+
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.4rem;" id="inst-test-title">
+          Test Guidelines & Instructions
+        </h2>
+        <p style="font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Please review the test rules before starting your exam countdown.
+        </p>
+
+        <!-- Test Specifications Grid -->
+        <div class="test-spec-grid">
+          <div class="spec-item">
+            <div class="spec-value" id="inst-duration">10 Mins</div>
+            <div class="spec-label">Duration</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-value" id="inst-questions-count">5 MCQs</div>
+            <div class="spec-label">Questions</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-value" id="inst-pass-pct">40%</div>
+            <div class="spec-label">Passing Score</div>
+          </div>
+        </div>
+
+        <ul class="instruction-list">
+          <li class="instruction-item">
+            <div class="instruction-icon"><i class="fas fa-check"></i></div>
+            <div><strong>4 Options per Question:</strong> Each question has 4 choices. Select one answer by clicking or pressing <kbd>A</kbd>, <kbd>B</kbd>, <kbd>C</kbd>, or <kbd>D</kbd>.</div>
+          </li>
+          <li class="instruction-item">
+            <div class="instruction-icon"><i class="fas fa-clock"></i></div>
+            <div><strong>Timed Session:</strong> The countdown starts immediately. If time expires, your answers are submitted automatically.</div>
+          </li>
+          <li class="instruction-item">
+            <div class="instruction-icon"><i class="fas fa-save"></i></div>
+            <div><strong>Progress Protection:</strong> Your answers are saved continuously to Firestore. If you refresh or disconnect, your attempt can be resumed.</div>
+          </li>
+          <li class="instruction-item">
+            <div class="instruction-icon"><i class="fas fa-chart-simple"></i></div>
+            <div><strong>Server-Side Evaluation:</strong> Results are computed securely on the backend immediately upon submission.</div>
+          </li>
+        </ul>
+
+        <div style="margin-top: 2rem;">
+          <button class="btn btn-primary btn-block btn-lg" id="inst-start-btn">
+            <i class="fas fa-play"></i> Start Exam Now
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. VIEW: ACTIVE TIMED MCQ EXAM ENGINE (Section 12 Layout) -->
+    <section id="view-exam" class="view-section">
+      <div class="exam-layout">
+        
+        <!-- Sticky Exam Header with Timer -->
+        <div class="exam-header">
+          <div class="exam-info">
+            <h2 id="exam-test-title">JavaScript Fundamentals</h2>
+            <p id="exam-test-meta">Web Development • 5 Questions</p>
+          </div>
+
+          <!-- Fixed Countdown Timer Widget -->
+          <div class="timer-box" id="exam-timer-box" aria-live="polite">
+            <i class="fas fa-stopwatch"></i>
+            <span id="exam-timer-display">10:00</span>
+          </div>
+        </div>
+
+        <!-- Left: Question & 4 Options Area -->
+        <div class="question-container">
+          <!-- Progress Bar -->
+          <div class="question-progress-bar-wrap">
+            <div class="question-progress-bar-fill" id="question-progress-bar" style="width: 20%;"></div>
+          </div>
+
+          <div class="question-meta-header">
+            <span class="question-number-badge" id="question-progress-label">Question 1 of 5</span>
+            <span class="marks-badge" id="question-marks-badge">Marks: 1</span>
+          </div>
+
+          <!-- Question Text -->
+          <div class="question-text" id="current-question-text">
+            Loading question...
+          </div>
+
+          <!-- 4 Options (A, B, C, D) -->
+          <div class="options-grid" id="question-options-container">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <!-- Question Controls -->
+          <div class="question-actions">
+            <button class="btn btn-secondary" id="exam-prev-btn">
+              <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <div style="font-size: 0.825rem; color: var(--text-muted);" id="exam-keyboard-tip">
+              Tip: Press <kbd>A</kbd>-<kbd>D</kbd> or <kbd>1</kbd>-<kbd>4</kbd> to select
+            </div>
+            <button class="btn btn-primary" id="exam-next-btn">
+              Next <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Question Palette / Navigation Grid -->
+        <div class="palette-card">
+          <h4 class="palette-title">Question Palette</h4>
+          
+          <div class="palette-legend">
+            <div class="legend-item">
+              <div class="legend-dot answered"></div>
+              <span>Answered</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot unanswered"></div>
+              <span>Remaining</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot current"></div>
+              <span>Current</span>
+            </div>
+          </div>
+
+          <div class="palette-grid" id="question-palette-grid">
+            <!-- Palette numbers injected via JavaScript -->
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <button class="btn btn-success btn-block" onclick="Exam.openSubmitModal()">
+              <i class="fas fa-check-circle"></i> Finish & Submit
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. VIEW: INSTANT RESULT & DETAILED REVIEW -->
+    <section id="view-result" class="view-section">
+      <div id="result-content">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- 7. VIEW: TEST HISTORY ("MY RESULTS") -->
+    <section id="view-student-history" class="view-section">
+      <div class="section-header">
+        <h2 class="section-title">My Test History</h2>
+        <p class="section-subtitle">Review all your previous test attempts, scores, and performance history.</p>
+      </div>
+
+      <div class="history-table-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Test Name</th>
+              <th>Subject</th>
+              <th>Date & Time</th>
+              <th>Score</th>
+              <th>Percentage</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="history-empty-state" style="display: none; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg); margin-top: 1.5rem; border: 1px solid var(--border);">
+        <i class="fas fa-history fa-3x" style="color: var(--text-muted); margin-bottom: 1rem;"></i>
+        <h3>No Test History Found</h3>
+        <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem;">You haven't completed any tests yet.</p>
+        <button class="btn btn-primary" onclick="App.showView('view-student-subjects'); location.hash='#/subjects';">
+          <i class="fas fa-book-open"></i> Browse Subjects
+        </button>
+      </div>
+    </section>
+
+    <!-- 8. VIEW: ADMIN MANAGEMENT PANEL -->
+    <section id="view-admin" class="view-section">
+      <div class="section-header">
+        <h2 class="section-title">Admin Management Portal</h2>
+        <p class="section-subtitle">Manage subjects, tests, 4-option questions, and view student test results.</p>
+      </div>
+
+      <!-- Admin Navigation Tabs -->
+      <div class="admin-nav-tabs">
+        <div class="admin-nav-tab active" data-tab="overview" onclick="Admin.switchTab('overview')">
+          <i class="fas fa-chart-line"></i> Dashboard Overview
+        </div>
+        <div class="admin-nav-tab" data-tab="subjects" onclick="Admin.switchTab('subjects')">
+          <i class="fas fa-layer-group"></i> Subjects Management
+        </div>
+        <div class="admin-nav-tab" data-tab="tests" onclick="Admin.switchTab('tests')">
+          <i class="fas fa-file-alt"></i> Tests Management
+        </div>
+        <div class="admin-nav-tab" data-tab="questions" onclick="Admin.switchTab('questions')">
+          <i class="fas fa-question-circle"></i> Questions (4 Options)
+        </div>
+        <div class="admin-nav-tab" data-tab="results" onclick="Admin.switchTab('results')">
+          <i class="fas fa-poll"></i> Student Results Log
+        </div>
+      </div>
+
+      <!-- Tab 1: Overview -->
+      <div id="admin-pane-overview" class="admin-tab-pane">
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+            <div>
+              <div class="stat-number" id="stat-total-students">0</div>
+              <div class="stat-title">Registered Students</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-book"></i></div>
+            <div>
+              <div class="stat-number" id="stat-total-subjects">0</div>
+              <div class="stat-title">Subjects</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+            <div>
+              <div class="stat-number" id="stat-total-tests">0</div>
+              <div class="stat-title">Published Tests</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-question"></i></div>
+            <div>
+              <div class="stat-number" id="stat-total-questions">0</div>
+              <div class="stat-title">Total MCQs</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+              <div class="stat-number" id="stat-total-attempts">0</div>
+              <div class="stat-title">Test Attempts</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+            <div>
+              <div class="stat-number" id="stat-pass-rate">0%</div>
+              <div class="stat-title">Pass Rate</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1rem;"><i class="fas fa-clock"></i> Recent Student Submissions</h3>
+          <div class="history-table-wrapper">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Test</th>
+                  <th>Subject</th>
+                  <th>Score</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-recent-attempts-table">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Subjects Management -->
+      <div id="admin-pane-subjects" class="admin-tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3>Subjects & Categories</h3>
+          <button class="btn btn-primary btn-sm" onclick="Admin.openAddSubjectModal()">
+            <i class="fas fa-plus"></i> Add Subject
+          </button>
+        </div>
+
+        <div class="history-table-wrapper">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Subject Name</th>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Tests</th>
+                <th>Questions</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-subjects-table-body">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Tests Management -->
+      <div id="admin-pane-tests" class="admin-tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3>Tests Management</h3>
+          <button class="btn btn-primary btn-sm" onclick="Admin.openAddTestModal()">
+            <i class="fas fa-plus"></i> Create Test
+          </button>
+        </div>
+
+        <div class="history-table-wrapper">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Test Title</th>
+                <th>Subject</th>
+                <th>Duration</th>
+                <th>Questions</th>
+                <th>Marks / Pass</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-tests-table-body">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4: Questions Management (4 Options) -->
+      <div id="admin-pane-questions" class="admin-tab-pane" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; max-width: 400px;">
+            <label style="font-weight: 600; white-space: nowrap;">Select Test:</label>
+            <select id="admin-questions-test-filter" class="form-control" onchange="Admin.filterQuestionsByTest(this.value)">
+              <option value="">-- Choose Test --</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" onclick="Admin.openAddQuestionModal()">
+              <i class="fas fa-plus"></i> Add One-by-One
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="Admin.openBulkUploadModal()">
+              <i class="fas fa-file-excel" style="color: #10b981;"></i> Bulk Upload (Excel / CSV)
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-questions-list">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Tab 5: All Results Log -->
+      <div id="admin-pane-results" class="admin-tab-pane" style="display: none;">
+        <div style="margin-bottom: 1.25rem;">
+          <h3>All Student Test Submissions</h3>
+        </div>
+
+        <div class="history-table-wrapper">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Test Name</th>
+                <th>Subject</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Submitted At</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-all-results-table-body">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       MODALS
+       ========================================== -->
+
+  <!-- 1. AUTH MODAL (Login / Signup) -->
+  <div class="modal-backdrop" id="modal-auth">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="auth-modal-title">Sign In</h3>
+        <i class="fas fa-times modal-close-btn" onclick="App.closeModal('modal-auth')"></i>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-auth-login" onclick="App.setAuthMode('login')">
+          Sign In
+        </div>
+        <div class="auth-tab" id="tab-auth-signup" onclick="App.setAuthMode('signup')">
+          Create Account
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="form-label">Password</label>
+            <a href="javascript:void(0)" onclick="App.showForgotPasswordModal()" style="font-size: 0.8rem;">Forgot password?</a>
+          </div>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.25rem;">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+
+        <!-- Quick Demo Fill Helpers -->
+        <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+          <p style="margin-bottom: 0.5rem; font-weight: 600;">Demo Accounts:</p>
+          <div style="display: flex; gap: 0.5rem; justify-content: center;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('login-email').value='student@mcq.com'; document.getElementById('login-password').value='student123';">
+              <i class="fas fa-user-graduate"></i> Student
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('login-email').value='admin@mcq.com'; document.getElementById('login-password').value='admin123';">
+              <i class="fas fa-shield-halved"></i> Admin
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="form-signup" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="signup-name" class="form-control" placeholder="e.g. Alex Johnson" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signup-email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Create Password (Min 6 chars)</label>
+          <input type="password" id="signup-password" class="form-control" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.25rem;">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. FORGOT PASSWORD MODAL -->
+  <div class="modal-backdrop" id="modal-forgot-password">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Password</h3>
+        <i class="fas fa-times modal-close-btn" onclick="App.closeModal('modal-forgot-password')"></i>
+      </div>
+      <form id="form-forgot-password">
+        <p style="font-size: 0.9rem; margin-bottom: 1rem;">Enter your email address and we will send you password reset instructions.</p>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="forgot-email" class="form-control" placeholder="name@example.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+          Send Reset Instructions
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. SUBMIT TEST CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="modal-confirm-submit">
+    <div class="modal-content" style="max-width: 440px; text-align: center;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1rem;">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+
+      <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.35rem;">Confirm Test Submission</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 1.25rem;">
+        Are you ready to finalize and submit your test?
+      </p>
+
+      <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.5rem;">
+        <div>
+          <div style="font-size: 1.35rem; font-weight: 800;" id="modal-submit-total">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total</div>
+        </div>
+        <div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: var(--success);" id="modal-submit-answered">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Answered</div>
+        </div>
+        <div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: var(--warning);" id="modal-submit-unanswered">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Remaining</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary btn-block" onclick="App.closeModal('modal-confirm-submit')">
+          Continue Test
+        </button>
+        <button class="btn btn-success btn-block" id="modal-btn-confirm-submit">
+          <i class="fas fa-check"></i> Submit Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ADMIN: ADD / EDIT SUBJECT MODAL -->
+  <div class="modal-backdrop" id="modal-subject">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="subject-modal-title">Add Subject</h3>
+        <i class="fas fa-times modal-close-btn" onclick="App.closeModal('modal-subject')"></i>
+      </div>
+      <form id="form-subject">
+        <input type="hidden" id="subject-form-id">
+        <div class="form-group">
+          <label class="form-label">Subject Name</label>
+          <input type="text" id="subject-form-name" class="form-control" placeholder="e.g. Computer Science" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject Code</label>
+          <input type="text" id="subject-form-code" class="form-control" placeholder="e.g. CS_IT" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="subject-form-description" class="form-control" rows="3" placeholder="Brief subject overview..."></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">FontAwesome Icon</label>
+            <input type="text" id="subject-form-icon" class="form-control" placeholder="e.g. laptop-code" value="book-open">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Accent Color (Hex)</label>
+            <input type="text" id="subject-form-color" class="form-control" placeholder="e.g. #2563eb" value="#2563eb">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+          Save Subject
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. ADMIN: ADD / EDIT TEST MODAL -->
+  <div class="modal-backdrop" id="modal-test">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="test-modal-title">Create Test</h3>
+        <i class="fas fa-times modal-close-btn" onclick="App.closeModal('modal-test')"></i>
+      </div>
+      <form id="form-test">
+        <input type="hidden" id="test-form-id">
+        <div class="form-group">
+          <label class="form-label">Subject / Category</label>
+          <select id="test-form-subject" class="form-control" required>
+            <!-- Injected via JS -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Test Title</label>
+          <input type="text" id="test-form-title" class="form-control" placeholder="e.g. JavaScript ES6 Fundamentals" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="test-form-description" class="form-control" rows="2" placeholder="Brief details about the test..."></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Duration (Mins)</label>
+            <input type="number" id="test-form-duration" class="form-control" value="10" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Total Marks</label>
+            <input type="number" id="test-form-marks" class="form-control" value="10" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pass %</label>
+            <input type="number" id="test-form-pass-pct" class="form-control" value="40" min="1" max="100" required>
+          </div>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+          <input type="checkbox" id="test-form-published" checked>
+          <label for="test-form-published" style="font-size: 0.9rem; font-weight: 600;">Publish Test immediately</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+          Save Test
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. ADMIN: ADD / EDIT ONE-BY-ONE QUESTION MODAL -->
+  <div class="modal-backdrop" id="modal-question">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="question-modal-title">Add Question (One-by-One)</h3>
+        <i class="fas fa-times modal-close-btn" onclick="App.closeModal('modal-question')"></i>
+      </div>
+      <form id="form-question">
+        <input type="hidden" id="question-form-id">
+
+        <!-- Subject & Test Pickers -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Subject / Category</label>
+            <select id="question-form-subject-select" class="form-control" onchange="Admin.handleModalSubjectChange(this.value)" required>
+              <!-- Injected via JS -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Test</label>
+            <select id="question-form-test-id" class="form-control" required>
+              <!-- Injected via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Question Text</label>
+          <textarea id="question-form-text" class="form-control" rows="3" placeholder="Type the full question here..." required></textarea>
+        </div>
+
+        <div style="margin-bottom: 0.75rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted);">
+          Provide 4 Options & Select the Radio Button for the Correct Answer:
+        </div>
+
+        <!-- Option A -->
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="radio" name="correct_option" value="A" id="question-form-correct-a" checked title="Select as correct answer">
+          <label for="question-form-correct-a" style="font-weight: 700; width: 20px;">A.</label>
+          <input type="text" id="question-form-opt-a" class="form-control" placeholder="Option A text..." required>
+        </div>
+
+        <!-- Option B -->
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="radio" name="correct_option" value="B" id="question-form-correct-b" title="Select as correct answer">
+          <label for="question-form-correct-b" style="font-weight: 700; width: 20px;">B.</label>
+          <input type="text" id="question-form-opt-b" class="form-control" placeholder="Option B text..." required>
+        </div>
+
+        <!-- Option C -->
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="radio" name="correct_option" value="C" id="question-form-correct-c" title="Select as correct answer">
+          <label for="question-form-correct-c" style="font-weight: 700; width: 20px;">C.</label>
+          <input type="text" id="question-form-opt-c" class="form-control" placeholder="Option C text..." required>
+        </div>
+
+        <!-- Option D -->
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="radio" name="correct_option" value="D" id="question-form-correct-d" title="Select as correct answer">
+          <label for="question-form-correct-d" style="font-weight: 700; width: 20px;">D.</label>
+          <input type="text" id="question-form-opt-d" class="form-control" placeholder="Option D text..." required>
+        </div>
+
+        <!-- Why Answer (Explanation) -->
+        <div class="form-group">
+          <label class="form-label"><i class="fas fa-lightbulb" style="color: var(--warning);"></i> Why Answer (Explanation / Rationale)</label>
+          <textarea id="question-form-why-answer" class="form-control" rows="2" placeholder="Explain why the selected option is correct (shown in student test review)..."></textarea>
+        </div>
+
+        <!-- Marks & Difficulty Row -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Marks</label>
+            <input type="number" id="question-form-marks" class="form-control" value="1" min="1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty Level</label>
+            <select id="question-form-difficulty" class="form-control">
+              <option value="Easy">Easy</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+          <i class="fas fa-save"></i> Save Question
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. ADMIN: BULK UPLOAD QUESTIONS MODAL (Excel / CSV) -->
+  <div class="modal-backdrop" id="modal-bulk-question">
+    <div class="modal-content" style="max-width: 980px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <div style="width: 38px; height: 38px; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.15); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fas fa-file-excel"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin-bottom: 0.1rem;">Bulk Upload Questions</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Import multiple 4-option MCQs from Excel (.xlsx, .xls) or CSV</span>
+          </div>
+        </div>
+        <i class="fas fa-times modal-close-btn" onclick="App.closeModal('modal-bulk-question')"></i>
+      </div>
+
+      <div style="overflow-y: auto; padding-right: 0.25rem; flex: 1;">
+        <!-- Step 1: Download Template Banner -->
+        <div class="bulk-step-card" style="margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem;"><i class="fas fa-download" style="color: var(--primary);"></i> Step 1: Download Standard Template</h4>
+              <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0;">Use the official template format with pre-configured headers and sample questions.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="Admin.downloadExcelTemplate()">
+                <i class="fas fa-file-excel" style="color: var(--success);"></i> Download Excel (.xlsx)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="Admin.downloadCsvTemplate()">
+                <i class="fas fa-file-csv" style="color: var(--info);"></i> Download CSV (.csv)
+              </button>
+            </div>
+          </div>
+          <div style="margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 0.78rem; color: var(--text-muted);">
+            <strong>Required Column Headers:</strong> <code>Question</code> | <code>Option A</code> | <code>Option B</code> | <code>Option C</code> | <code>Option D</code> | <code>Correct Answer</code> (A/B/C/D) | <code>Why Answer</code> | <code>Marks</code> | <code>Difficulty</code> (Easy/Medium/Hard)
+          </div>
+        </div>
+
+        <!-- Step 2: Target Selection & File Upload -->
+        <div class="bulk-step-card" style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;"><i class="fas fa-upload" style="color: var(--primary);"></i> Step 2: Select Target Test & Upload File</h4>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Target Subject</label>
+              <select id="bulk-form-subject-select" class="form-control" onchange="Admin.handleBulkSubjectChange(this.value)" required>
+                <!-- Injected via JS -->
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Target Test</label>
+              <select id="bulk-form-test-select" class="form-control" onchange="Admin.handleBulkTestChange(this.value)" required>
+                <!-- Injected via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Dropzone -->
+          <div id="bulk-upload-dropzone" class="file-dropzone" onclick="document.getElementById('bulk-file-input').click()">
+            <input type="file" id="bulk-file-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="Admin.handleFileInputChange(this)">
+            <div class="dropzone-inner" id="dropzone-prompt">
+              <i class="fas fa-cloud-upload-alt fa-3x" style="color: var(--primary); margin-bottom: 0.75rem;"></i>
+              <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem;">Drag & drop your Excel or CSV file here, or <span style="color: var(--primary); text-decoration: underline; cursor: pointer;">browse</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Supports .xlsx, .xls, and .csv files</div>
+            </div>
+            <div id="dropzone-file-info" style="display: none; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-file-excel fa-2x" style="color: var(--success);"></i>
+                <div>
+                  <strong id="bulk-file-name" style="font-size: 0.95rem;">filename.xlsx</strong>
+                  <div id="bulk-file-size" style="font-size: 0.75rem; color: var(--text-muted);">0 KB</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); document.getElementById('bulk-file-input').click()">
+                Change File
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Interactive Preview & Validation Table -->
+        <div id="bulk-preview-section" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h4 style="font-size: 0.95rem; margin: 0;"><i class="fas fa-table" style="color: var(--primary);"></i> Step 3: Preview & Validation</h4>
+            <div id="bulk-validation-summary" style="display: flex; gap: 0.5rem; font-size: 0.8rem;">
+              <!-- Summary badges injected via JS -->
+            </div>
+          </div>
+
+          <div class="bulk-preview-table-container">
+            <table class="bulk-preview-table">
+              <thead>
+                <tr>
+                  <th style="width: 45px;">#</th>
+                  <th style="width: 85px;">Status</th>
+                  <th style="min-width: 220px;">Question</th>
+                  <th style="min-width: 130px;">Option A</th>
+                  <th style="min-width: 130px;">Option B</th>
+                  <th style="min-width: 130px;">Option C</th>
+                  <th style="min-width: 130px;">Option D</th>
+                  <th style="width: 80px;">Correct</th>
+                  <th style="min-width: 160px;">Why Answer</th>
+                  <th style="width: 65px;">Marks</th>
+                  <th style="width: 85px;">Difficulty</th>
+                </tr>
+              </thead>
+              <tbody id="bulk-preview-table-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer Action -->
+      <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 1rem;">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-bulk-question')">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-success" id="btn-import-bulk" onclick="Admin.importBulkQuestions()" disabled>
+          <i class="fas fa-file-import"></i> Import Questions
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="assertive"></div>
+
+  <!-- SheetJS library for Excel (.xlsx / .xls) and CSV parsing & template generation -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- JavaScript Modules -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/student.js"></script>
+  <script src="/js/exam.js"></script>
+  <script src="/js/result.js"></script>
+  <script src="/js/admin.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
