@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 require('dotenv').config();
 
 let db = null;
@@ -77,14 +78,23 @@ function initFirebase() {
  * High-performance local Firestore-compatible service layer for local development / testing
  */
 function createLocalFirestoreService() {
-  const dataDir = path.join(__dirname, '..', 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+  // Use a writable temp directory on serverless platforms (like Vercel).
+  // Allow overriding via `LOCAL_FIRESTORE_PATH` env var for local dev.
+  const dataDir = process.env.LOCAL_FIRESTORE_PATH || path.join(os.tmpdir(), 'mcq_local_data');
+  let persistenceDisabled = false;
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+  } catch (e) {
+    console.warn(`⚠️ Could not create local data directory ${dataDir}: ${e.message}. Falling back to in-memory store.`);
+    persistenceDisabled = true;
   }
+
   const storePath = path.join(dataDir, 'firestore_local_store.json');
 
   let store = {};
-  if (fs.existsSync(storePath)) {
+  if (!persistenceDisabled && fs.existsSync(storePath)) {
     try {
       store = JSON.parse(fs.readFileSync(storePath, 'utf8'));
     } catch (e) {
@@ -93,6 +103,7 @@ function createLocalFirestoreService() {
   }
 
   function saveStore() {
+    if (persistenceDisabled) return;
     try {
       fs.writeFileSync(storePath, JSON.stringify(store, null, 2), 'utf8');
     } catch (e) {
