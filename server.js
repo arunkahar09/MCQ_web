@@ -122,8 +122,12 @@ function startServer(portToTry) {
   });
 }
 
-if (process.env.NODE_ENV !== 'test') {
+// Do not start a listening server when running on serverless platforms like Vercel.
+// Vercel sets `process.env.VERCEL` to '1' for runtime; avoid calling `listen()` there.
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   startServer(parseInt(PORT, 10));
+} else if (process.env.VERCEL) {
+  console.log('ℹ️ Running in Vercel/serverless environment — server listens disabled.');
 }
 
 module.exports = app;
