@@ -49,3 +49,6 @@ Thumbs.db
 .firebaserc
 firestore-debug.log
 firebase-debug.log
+
+.vercel
+.env*
