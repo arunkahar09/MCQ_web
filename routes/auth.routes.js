@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const { getDb, getAuth } = require('../config/firebase');
+const { getDb } = require('../config/supabase');
 const { authenticate, generateToken } = require('../middleware/auth');
 
 // POST /api/auth/signup - Student Registration
@@ -27,9 +27,8 @@ router.post('/signup', async (req, res) => {
     }
 
     const db = getDb();
-    const auth = getAuth();
 
-    // Check if email already registered in Firestore
+    // Check if email already registered in Supabase
     const existingUsers = await db.collection('users').where('email', '==', trimmedEmail).limit(1).get();
     if (!existingUsers.empty) {
       return res.status(400).json({
@@ -38,38 +37,12 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    let uid = null;
-
-    // Create user in Firebase Auth if available
-    if (auth && typeof auth.createUser === 'function') {
-      try {
-        const fbUser = await auth.createUser({
-          email: trimmedEmail,
-          password: password,
-          displayName: trimmedName
-        });
-        uid = fbUser.uid;
-      } catch (authErr) {
-        // If live Firebase auth fails with email-already-exists
-        if (authErr.code === 'auth/email-already-exists') {
-          return res.status(400).json({
-            success: false,
-            message: 'An account with this email already exists in Firebase Auth.'
-          });
-        }
-        // If offline or non-critical error, generate custom UID
-        uid = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-      }
-    } else {
-      uid = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-    }
-
+    const uid = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
     const hashedPassword = await bcrypt.hash(password, 10);
     const now = new Date().toISOString();
 
     const userData = {
       id: uid,
-      uid: uid,
       name: trimmedName,
       email: trimmedEmail,
       password_hash: hashedPassword,
@@ -145,7 +118,7 @@ router.post('/login', async (req, res) => {
       isPasswordMatch = await bcrypt.compare(password, user.password_hash);
     }
 
-    // Also support default demo credentials fallback if hash not yet updated
+    // Also support default demo credentials fallback
     if (!isPasswordMatch) {
       if ((trimmedEmail === 'admin@mcq.com' && password === 'admin123') ||
           (trimmedEmail === 'student@mcq.com' && password === 'student123')) {
@@ -232,7 +205,6 @@ router.post('/forgot-password', async (req, res) => {
     const usersSnap = await db.collection('users').where('email', '==', trimmedEmail).limit(1).get();
 
     if (usersSnap.empty) {
-      // Don't leak user existence for security, return positive confirmation
       return res.json({
         success: true,
         message: 'If an account exists with this email, password reset instructions have been sent.'

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../config/firebase');
+const { getDb } = require('../config/supabase');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
 // GET /api/results/my-history - Logged-in Student Test History

@@ -1,5 +1,5 @@
 /**
- * Admin Creation and Promotion Utility
+ * Admin Creation and Promotion Utility for Supabase / Local Store
  * 
  * Usage:
  *   node scripts/create_admin.js [name] [email] [password]
@@ -10,7 +10,7 @@
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-const { getDb, getAuth, isLiveFirebase } = require('../config/firebase');
+const { getDb, isLiveSupabase } = require('../config/supabase');
 
 async function createAdmin() {
   const args = process.argv.slice(2);
@@ -23,43 +23,15 @@ async function createAdmin() {
   console.log('======================================================\n');
 
   const db = getDb();
-  const auth = getAuth();
-  const isLive = isLiveFirebase();
+  const isLive = isLiveSupabase();
+  console.log(`📡 Target Engine: ${isLive ? 'Supabase Cloud PostgreSQL' : 'Local Store'}`);
 
   try {
-    let uid = 'usr_admin_' + Date.now();
-
-    // Check Firebase Auth if live
-    if (isLive && auth && typeof auth.createUser === 'function') {
-      try {
-        const existing = await auth.getUserByEmail(email);
-        uid = existing.uid;
-        if (typeof auth.setCustomUserClaims === 'function') {
-          await auth.setCustomUserClaims(uid, { role: 'admin' });
-        }
-        console.log(`✅ Set Firebase Auth custom claims (role=admin) for UID: ${uid}`);
-      } catch (err) {
-        if (err.code === 'auth/user-not-found') {
-          const newAuth = await auth.createUser({
-            email,
-            password,
-            displayName: name
-          });
-          uid = newAuth.uid;
-          if (typeof auth.setCustomUserClaims === 'function') {
-            await auth.setCustomUserClaims(uid, { role: 'admin' });
-          }
-          console.log(`✅ Created Firebase Auth Admin User (UID: ${uid})`);
-        } else {
-          console.warn('Firebase Auth note:', err.message);
-        }
-      }
-    }
-
-    // Check Firestore user doc
-    const usersSnap = await db.collection('users').where('email', '==', email).limit(1).get();
+    const uid = 'usr_admin_' + Date.now();
     const hashedPassword = await bcrypt.hash(password, 10);
     const now = new Date().toISOString();
+
+    const usersSnap = await db.collection('users').where('email', '==', email).limit(1).get();
 
     if (!usersSnap.empty) {
       const docId = usersSnap.docs[0].id;
@@ -68,11 +40,10 @@ async function createAdmin() {
         password_hash: hashedPassword,
         updated_at: now
       });
-      console.log(`✅ Successfully updated Firestore user '${email}' to role: 'admin'`);
+      console.log(`✅ Successfully updated user '${email}' to role: 'admin'`);
     } else {
       await db.collection('users').doc(uid).set({
         id: uid,
-        uid: uid,
         name: name,
         email: email,
         password_hash: hashedPassword,
@@ -80,7 +51,7 @@ async function createAdmin() {
         created_at: now,
         updated_at: now
       });
-      console.log(`✅ Successfully created new Firestore Admin account '${email}'`);
+      console.log(`✅ Successfully created new Admin account '${email}'`);
     }
 
     console.log('\n======================================================');

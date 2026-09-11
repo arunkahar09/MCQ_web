@@ -1,4 +1,4 @@
-// Automated End-to-End Verification Test Suite for Firebase MCQ Portal
+// Automated End-to-End Verification Test Suite for MCQ Portal
 const http = require('http');
 
 function makeRequest(path, method = 'GET', body = null, token = null) {
@@ -54,7 +54,7 @@ async function runTests() {
       email: 'student@mcq.com',
       password: 'student123'
     });
-    console.log('2. Student Login (Firebase Auth):', studentLogin.status === 200 && studentLogin.body.success ? `✅ PASS (User: ${studentLogin.body.user.name})` : '❌ FAIL');
+    console.log('2. Student Login:', studentLogin.status === 200 && studentLogin.body.success ? `✅ PASS (User: ${studentLogin.body.user.name})` : '❌ FAIL');
     const studentToken = studentLogin.body.token;
 
     // 3. Admin Login
@@ -73,7 +73,7 @@ async function runTests() {
     const tests = await makeRequest('/api/tests');
     console.log('5. Fetch Tests from Firestore:', tests.body.tests && tests.body.tests.length > 0 ? `✅ PASS (${tests.body.tests.length} tests found)` : '❌ FAIL');
 
-    const firstTest = tests.body.tests[0];
+    const firstTest = tests.body.tests.find(t => (t.question_count || 0) > 0) || tests.body.tests[0];
 
     // 6. Start Exam
     const startExam = await makeRequest(`/api/exam/start/${firstTest.id}`, 'GET', null, studentToken);

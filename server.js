@@ -2,10 +2,9 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-
 require('dotenv').config();
 
-const { initFirebase, isLiveFirebase, getDb } = require('./config/firebase');
+const { initSupabase, isLiveSupabase, getDb } = require('./config/supabase');
 const initDatabase = require('./db/init');
 
 const authRoutes = require('./routes/auth.routes');
@@ -17,28 +16,20 @@ const resultRoutes = require('./routes/result.routes');
 const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-
-app.use(express.json({
-  limit: '10mb'
-}));
-
-app.use(express.urlencoded({
-  extended: true,
-  limit: '10mb'
-}));
-
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Static Assets
+app.use(express.static(path.join(__dirname, 'public')));
 
 // =========================
 // API Routes
 // =========================
-
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/tests', testRoutes);
@@ -47,199 +38,99 @@ app.use('/api/exam', examRoutes);
 app.use('/api/results', resultRoutes);
 app.use('/api/admin', adminRoutes);
 
-
 // =========================
 // Health Check
 // =========================
-
 app.get('/api/health', async (req, res) => {
-
-  const isLive = isLiveFirebase();
+  const isLive = isLiveSupabase();
   const db = getDb();
-
   let dbStatus = 'healthy';
-  let stats = {};
+  let stats = { hasData: false, subjectsCount: 0 };
 
   try {
-
-    const subjectsSnap = await db
-      .collection('subjects')
-      .limit(1)
-      .get();
-
+    const subjectsSnap = await db.collection('subjects').limit(1).get();
     stats.hasData = !subjectsSnap.empty;
-
+    stats.subjectsCount = subjectsSnap.size || 0;
   } catch (e) {
-
     dbStatus = 'error: ' + e.message;
-
   }
 
   res.json({
     status: dbStatus,
-    engine: isLive
-      ? 'Cloud Firestore (Firebase)'
-      : 'Firestore Local Storage',
-    firebase_live: isLive,
-    timestamp: new Date().toISOString()
+    engine: isLive ? 'Supabase Cloud PostgreSQL' : 'Local Pure-JS Storage Layer',
+    supabase_live: isLive,
+    timestamp: new Date().toISOString(),
+    stats
   });
-
 });
 
-
 // =========================
-// Firebase Config
+// Supabase Config (Safe Client Metadata)
 // =========================
-
-app.get('/api/config/firebase', (req, res) => {
-
+app.get('/api/config/supabase', (req, res) => {
   res.json({
-
-    apiKey: process.env.FIREBASE_API_KEY || '',
-
-    authDomain:
-      process.env.FIREBASE_AUTH_DOMAIN || '',
-
-    projectId:
-      process.env.FIREBASE_PROJECT_ID || 'mcqweb-e912a',
-
-    storageBucket:
-      process.env.FIREBASE_STORAGE_BUCKET || '',
-
-    messagingSenderId:
-      process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-
-    appId:
-      process.env.FIREBASE_APP_ID || ''
-
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
   });
-
 });
 
-
-// =========================
-// SPA Fallback
-// =========================
-
-// IMPORTANT:
-// Express 5 ke liye '*' use mat karo
-app.get('/{*splat}', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Backward-compatible endpoint for legacy frontend checks
+app.get('/api/config/firebase', (req, res) => {
+  res.json({
+    configured: true,
+    engine: isLiveSupabase() ? 'supabase' : 'local'
+  });
 });
 
-
+// =========================
+// SPA Fallback (Express 4 & 5 Compatible)
+// =========================
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // =========================
 // Error Handler
 // =========================
-
 app.use((err, req, res, next) => {
-
-  console.error('Unhandled Error:', err.stack);
-
+  console.error('Unhandled Error:', err.stack || err);
   res.status(500).json({
-
     success: false,
-
-    message:
-      'Internal server error: ' + err.message
-
+    message: 'Internal server error: ' + (err.message || 'Unknown error')
   });
-
 });
 
-
 // =========================
-// Local Server
+// Local Server Initialization
 // =========================
-
 function startServer(portToTry) {
+  const server = app.listen(portToTry, async () => {
+    const isLive = isLiveSupabase();
+    console.log(`\n=================================================`);
+    console.log(`🚀 MCQ Test Portal running at http://localhost:${portToTry}`);
+    console.log(`📡 Database Engine: ${isLive ? 'Supabase Cloud PostgreSQL' : 'Local Development Store'}`);
+    console.log(`=================================================\n`);
 
-  const server = app.listen(
-    portToTry,
-    async () => {
-
-      const isLive = isLiveFirebase();
-
-      console.log(
-        `MCQ Website running on port ${portToTry}`
-      );
-
-      console.log(
-        `Database: ${
-          isLive
-            ? 'Cloud Firestore'
-            : 'Firestore Local Storage'
-        }`
-      );
-
-      try {
-
-        await initDatabase();
-
-        const db = getDb();
-
-        const subSnap = await db
-          .collection('subjects')
-          .limit(1)
-          .get();
-
-        if (subSnap.empty) {
-
-          console.log(
-            'Initializing Firestore collections...'
-          );
-
-          require('./scripts/migrate_to_firebase');
-
-        }
-
-      } catch (err) {
-
-        console.warn(
-          'Database auto-init note:',
-          err.message
-        );
-
-      }
-
+    try {
+      await initDatabase();
+    } catch (err) {
+      console.warn('Database auto-init note:', err.message);
     }
-  );
-
-  server.on('error', (err) => {
-
-    if (err.code === 'EADDRINUSE') {
-
-      console.warn(
-        `Port ${portToTry} busy. Trying ${
-          portToTry + 1
-        }`
-      );
-
-      startServer(portToTry + 1);
-
-    } else {
-
-      console.error('Server error:', err);
-
-    }
-
   });
 
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`Port ${portToTry} busy. Trying ${portToTry + 1}`);
+      startServer(portToTry + 1);
+    } else {
+      console.error('Server error:', err);
+    }
+  });
 }
 
-
-// Local machine par server start hoga
-// Vercel par app ko export kiya jayega
-
-if (
-  process.env.NODE_ENV !== 'test' &&
-  !process.env.VERCEL
-) {
-
+// Start server locally (Vercel serverless functions will export app)
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   startServer(parseInt(PORT, 10));
-
 }
-
 
 module.exports = app;

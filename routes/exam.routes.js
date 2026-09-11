@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../config/firebase');
+const { getDb } = require('../config/supabase');
 const { authenticate } = require('../middleware/auth');
 
 // GET /api/exam/start/:testId - Student starts an exam attempt
