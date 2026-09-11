@@ -5,64 +5,97 @@
 
 /* 1. DESIGN TOKENS & COLOR SYSTEM */
 :root {
-  /* Brand Color */
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-focus: rgba(37, 99, 235, 0.25);
-  --primary-subtle: #eff6ff;
-  --primary-border: #bfdbfe;
+  /* Light mode: Snapchat-inspired bright yellow + clean white */
+  --primary: #fffc00;
+  --primary-hover: #f3ea00;
+  --primary-focus: rgba(255, 252, 0, 0.28);
+  --primary-subtle: #fffde6;
+  --primary-border: #f2e34d;
 
-  /* Functional Status Colors */
-  --success: #059669;
-  --success-hover: #047857;
-  --success-subtle: #ecfdf5;
-  --success-border: #a7f3d0;
+  --success: #2eb67d;
+  --success-hover: #1a9d67;
+  --success-subtle: #ebfff3;
+  --success-border: #9ee0b9;
 
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
-  --danger-subtle: #fef2f2;
-  --danger-border: #fecaca;
+  --danger: #e53935;
+  --danger-hover: #c62828;
+  --danger-subtle: #fff0f0;
+  --danger-border: #f5b4b4;
 
-  --warning: #d97706;
-  --warning-subtle: #fffbeb;
-  --warning-border: #fde68a;
+  --warning: #ffb300;
+  --warning-subtle: #fff7df;
+  --warning-border: #f9d57b;
 
-  --info: #0284c7;
-  --info-subtle: #f0f9ff;
-  --info-border: #bae6fd;
+  --info: #37a8ff;
+  --info-subtle: #eef8ff;
+  --info-border: #c4e5ff;
 
-  /* Light Theme Surface Colors */
-  --bg-page: #f8fafc;
+  --bg-page: #f5f5f5;
   --bg-card: #ffffff;
-  --bg-subtle: #f1f5f9;
-  --bg-active: #e2e8f0;
+  --bg-subtle: #f0f0f0;
+  --bg-active: #e4e4e4;
 
-  /* Typography Colors */
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-light: #64748b;
+  --text-main: #111111;
+  --text-muted: #434343;
+  --text-light: #666666;
   --text-inverse: #ffffff;
 
-  /* Borders & Dividers */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border: #e7e7e7;
+  --border-strong: #d2d2d2;
 
-  /* Layout & Geometry */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-full: 9999px;
 
-  /* Shadows (Subtle, purposeful depth) */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xs: 0 2px 6px rgba(17, 17, 17, 0.05);
+  --shadow-sm: 0 8px 18px rgba(17, 17, 17, 0.08);
+  --shadow-md: 0 12px 26px rgba(17, 17, 17, 0.1);
+  --shadow-lg: 0 16px 32px rgba(17, 17, 17, 0.12);
 
-  /* Fonts */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-heading: 'Outfit', 'Inter', -apple-system, sans-serif;
+  --font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-heading: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+html[data-theme="dark"] {
+  --primary: #e50914;
+  --primary-hover: #ff2d2d;
+  --primary-focus: rgba(229, 9, 20, 0.24);
+  --primary-subtle: rgba(229, 9, 20, 0.12);
+  --primary-border: rgba(229, 9, 20, 0.5);
+
+  --success: #41d67a;
+  --success-hover: #64e196;
+  --success-subtle: rgba(65, 214, 122, 0.12);
+  --success-border: rgba(65, 214, 122, 0.35);
+
+  --danger: #ff4d4f;
+  --danger-hover: #ff6666;
+  --danger-subtle: rgba(255, 77, 79, 0.12);
+  --danger-border: rgba(255, 77, 79, 0.38);
+
+  --warning: #ffb020;
+  --warning-subtle: rgba(255, 176, 32, 0.12);
+  --warning-border: rgba(255, 176, 32, 0.35);
+
+  --bg-page: #000000;
+  --bg-card: #121212;
+  --bg-subtle: #1d1d1d;
+  --bg-active: #2a2a2a;
+
+  --text-main: #f5f5f5;
+  --text-muted: #d1d1d1;
+  --text-light: #9f9f9f;
+  --text-inverse: #111111;
+
+  --border: #2a2a2a;
+  --border-strong: #404040;
+
+  --shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.48);
+  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.52);
+  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* Dark Theme Surface Colors */
@@ -121,7 +154,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-page);
+  background: linear-gradient(180deg, var(--bg-page) 0%, #efefef 100%);
   color: var(--text-main);
   line-height: 1.5;
   min-height: 100vh;
@@ -129,11 +162,16 @@ body {
   flex-direction: column;
 }
 
+html[data-theme="dark"] body {
+  background: linear-gradient(180deg, #050505 0%, #111111 100%);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   color: var(--text-main);
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: 0.02em;
 }
 
 h1 { font-size: 1.875rem; letter-spacing: -0.02em; }
@@ -164,15 +202,21 @@ button, input, select, textarea {
 
 /* 3. NAVIGATION BAR */
 .navbar {
-  background-color: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  padding: 0.75rem 1.5rem;
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-subtle) 100%);
+  border-bottom: 2px solid var(--border);
+  padding: 0.85rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: var(--shadow-xs);
+}
+
+html[data-theme="dark"] .navbar {
+  background: linear-gradient(180deg, #181818 0%, #0f0f0f 100%);
+  border-bottom-color: var(--border);
 }
 
 .brand-logo {
@@ -268,15 +312,22 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-weight: 600;
-  padding: 0.55rem 1rem;
-  border-radius: var(--radius-md);
+  font-weight: 700;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
   line-height: 1.25;
   text-decoration: none;
   white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(31, 28, 26, 0.08);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(31, 28, 26, 0.12);
+  filter: brightness(0.98);
 }
 
 .btn:disabled {
@@ -292,7 +343,7 @@ button, input, select, textarea {
 
 .btn-primary {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--text-inverse);
 }
 
 .btn-primary:hover {
@@ -304,6 +355,15 @@ button, input, select, textarea {
   background-color: var(--bg-subtle);
   color: var(--text-main);
   border-color: var(--border);
+}
+
+html[data-theme="dark"] .btn-primary {
+  color: #fff;
+}
+
+html[data-theme="dark"] .btn-secondary {
+  background-color: #1b1b1b;
+  color: #fff;
 }
 
 .btn-secondary:hover {
@@ -395,13 +455,18 @@ button, input, select, textarea {
 
 /* 6. HERO & HOME SECTION */
 .hero-banner {
-  background-color: var(--bg-card);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 3rem 2rem;
+  padding: 2.5rem 1.5rem;
   text-align: center;
   box-shadow: var(--shadow-sm);
   margin-bottom: 2.5rem;
+}
+
+html[data-theme="dark"] .hero-banner {
+  background: linear-gradient(180deg, #171717 0%, #111111 100%);
+  border-color: var(--border);
 }
 
 .hero-badge {
@@ -451,10 +516,11 @@ button, input, select, textarea {
 }
 
 .feature-card {
-  background-color: var(--bg-subtle);
+  background-color: #fffefb;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.35rem;
+  box-shadow: var(--shadow-xs);
 }
 
 .feature-icon {
@@ -500,7 +566,7 @@ button, input, select, textarea {
 }
 
 .subject-card {
-  background-color: var(--bg-card);
+  background-color: #fffdf9;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -508,7 +574,7 @@ button, input, select, textarea {
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
   box-shadow: var(--shadow-xs);
 }
 
@@ -570,7 +636,7 @@ button, input, select, textarea {
 }
 
 .test-card {
-  background-color: var(--bg-card);
+  background-color: #fffdf9;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
@@ -625,7 +691,7 @@ button, input, select, textarea {
 .instructions-card {
   max-width: 680px;
   margin: 0 auto;
-  background-color: var(--bg-card);
+  background-color: #fffefb;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 2.25rem;
@@ -958,7 +1024,7 @@ button, input, select, textarea {
 .result-card {
   max-width: 720px;
   margin: 0 auto;
-  background-color: var(--bg-card);
+  background-color: #fffefb;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 2.5rem;
