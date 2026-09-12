@@ -56,14 +56,15 @@
 
   --font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
   --font-heading: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-script: "Pacifico", "Segoe Print", cursive;
 }
 
 html[data-theme="dark"] {
   --primary: #db0000;
   --primary-hover: #ff1f1f;
   --primary-focus: rgba(219, 0, 0, 0.24);
-  --primary-subtle: rgba(219, 0, 0, 0.14);
-  --primary-border: rgba(219, 0, 0, 0.45);
+  --primary-subtle: rgba(219, 0, 0, 0.12);
+  --primary-border: rgba(219, 0, 0, 0.42);
 
   --success: #2dcf78;
   --success-hover: #58df96;
@@ -80,17 +81,17 @@ html[data-theme="dark"] {
   --warning-border: rgba(255, 176, 32, 0.35);
 
   --bg-page: #000000;
-  --bg-card: #111111;
-  --bg-subtle: #191919;
-  --bg-active: #242424;
+  --bg-card: #121212;
+  --bg-subtle: #1c1c1c;
+  --bg-active: #2b2b2b;
 
   --text-main: #ffffff;
-  --text-muted: #d8d8d8;
-  --text-light: #9d9d9d;
+  --text-muted: #e5e5e5;
+  --text-light: #b7b7b7;
   --text-inverse: #000000;
 
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.18);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
 
   --shadow-xs: 0 2px 8px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.55);
@@ -164,6 +165,19 @@ body {
 
 html[data-theme="dark"] body {
   background: linear-gradient(180deg, #000000 0%, #111111 100%);
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .hero-banner,
+html[data-theme="dark"] .feature-card,
+html[data-theme="dark"] .subject-card,
+html[data-theme="dark"] .test-card,
+html[data-theme="dark"] .instructions-card,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal-content {
+  background: linear-gradient(180deg, rgba(18, 18, 18, 0.96), rgba(8, 8, 8, 0.96));
+  border-color: var(--border);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.32);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -253,6 +267,12 @@ html[data-theme="dark"] .navbar {
 
 .brand-text span {
   color: var(--primary);
+}
+
+.brand-text {
+  font-family: var(--font-script);
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
 }
 
 .nav-links {
@@ -631,6 +651,71 @@ html[data-theme="dark"] .hero-banner {
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 2rem;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.site-footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.4rem 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.footer-brand .brand-text {
+  font-size: 1.3rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-links a:hover {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.footer-note {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+html[data-theme="dark"] .site-footer {
+  background: rgba(14, 14, 14, 0.9);
+  border-top-color: var(--border);
+}
+
+html[data-theme="dark"] .footer-links a,
+html[data-theme="dark"] .footer-note {
+  color: #f3f3f3;
 }
 
 /* 8. TESTS LISTING */
