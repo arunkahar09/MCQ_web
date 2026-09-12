@@ -48,6 +48,7 @@ const API = {
     try {
       const response = await fetch(endpoint, {
         ...options,
+        credentials: 'include',
         headers
       });
 
