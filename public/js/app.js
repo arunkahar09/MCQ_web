@@ -11,7 +11,7 @@ function escapeHtml(str) {
 
 const App = {
   activeView: 'view-home',
-  theme: localStorage.getItem('mcq_theme') || 'dark',
+  theme: localStorage.getItem('mcq_theme') || 'light',
 
   async init() {
     // 1. Initialize Theme
