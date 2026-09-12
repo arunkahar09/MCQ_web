@@ -61,7 +61,30 @@ initSupabase();
  * (Zero native C++ modules, 100% serverless safe, no sqlite3 dependencies)
  */
 const isVercel = Boolean(process.env.VERCEL);
-const localDataDir = process.env.LOCAL_DATA_PATH || (isVercel ? path.join(os.tmpdir(), 'mcq_local_store') : path.join(__dirname, '..', 'data'));
+const projectDataDir = path.resolve(__dirname, '..', 'data');
+const fallbackDataDir = path.join(os.tmpdir(), 'mcq_local_store');
+
+function resolveLocalDataDir() {
+  const preferred = process.env.LOCAL_DATA_PATH || projectDataDir;
+
+  try {
+    if (!fs.existsSync(preferred)) {
+      fs.mkdirSync(preferred, { recursive: true });
+    }
+    return preferred;
+  } catch (e) {
+    try {
+      if (!fs.existsSync(fallbackDataDir)) {
+        fs.mkdirSync(fallbackDataDir, { recursive: true });
+      }
+      return fallbackDataDir;
+    } catch (fallbackErr) {
+      return fallbackDataDir;
+    }
+  }
+}
+
+const localDataDir = resolveLocalDataDir();
 let persistenceDisabled = false;
 try {
   if (!fs.existsSync(localDataDir)) {
@@ -72,7 +95,7 @@ try {
 }
 
 const localStorePath = path.join(localDataDir, 'mcq_supabase_cache.json');
-const legacyStorePath = path.join(__dirname, '..', 'data', 'firestore_local_store.json');
+const legacyStorePath = path.join(projectDataDir, 'firestore_local_store.json');
 let memoryStore = {};
 
 if (!persistenceDisabled) {

@@ -53,7 +53,8 @@ async function initDatabase() {
 
     // 2. Verify/Seed Subjects
     const subjectsSnap = await db.collection('subjects').limit(1).get();
-    if (subjectsSnap.empty) {
+    const testsSnap = await db.collection('tests').limit(1).get();
+    if (subjectsSnap.empty || testsSnap.empty) {
       console.log('🌱 Seeding initial subjects, tests, and MCQs...');
 
       const subjects = [
