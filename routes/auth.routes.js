@@ -166,6 +166,84 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /api/auth/create-admin - One-time deployed admin bootstrapping
+router.post('/create-admin', async (req, res) => {
+  try {
+    const { verifyKey, name, email } = req.body || {};
+    const expectedKey = (process.env.ADMIN_VERIFY_KEY || 'ARUN0909').trim();
+    const providedKey = String(verifyKey || '').trim();
+
+    if (!providedKey || providedKey !== expectedKey) {
+      return res.status(403).json({
+        success: false,
+        message: 'Invalid verification key.'
+      });
+    }
+
+    const db = getDb();
+    const adminEmail = (email || 'admin@mcq.com').trim().toLowerCase();
+    const adminName = (name || 'System Administrator').trim();
+    const fixedPassword = 'ARUN0909';
+    const now = new Date().toISOString();
+    const hashedPassword = await bcrypt.hash(fixedPassword, 10);
+
+    const usersSnap = await db.collection('users').where('email', '==', adminEmail).limit(1).get();
+
+    if (!usersSnap.empty) {
+      const doc = usersSnap.docs[0];
+      await db.collection('users').doc(doc.id).update({
+        name: adminName || doc.data().name || 'System Administrator',
+        role: 'admin',
+        password_hash: hashedPassword,
+        updated_at: now
+      });
+
+      return res.json({
+        success: true,
+        message: 'Admin account verified and updated successfully.',
+        email: adminEmail,
+        password: fixedPassword,
+        user: {
+          id: doc.id,
+          name: adminName || doc.data().name || 'System Administrator',
+          email: adminEmail,
+          role: 'admin'
+        }
+      });
+    }
+
+    const uid = 'usr_admin_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    await db.collection('users').doc(uid).set({
+      id: uid,
+      name: adminName,
+      email: adminEmail,
+      password_hash: hashedPassword,
+      role: 'admin',
+      created_at: now,
+      updated_at: now
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Admin account created successfully.',
+      email: adminEmail,
+      password: fixedPassword,
+      user: {
+        id: uid,
+        name: adminName,
+        email: adminEmail,
+        role: 'admin'
+      }
+    });
+  } catch (err) {
+    console.error('Create admin error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to create admin account: ' + err.message
+    });
+  }
+});
+
 // GET /api/auth/me - Get Current Logged-in User
 router.get('/me', authenticate, async (req, res) => {
   try {

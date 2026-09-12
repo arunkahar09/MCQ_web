@@ -597,12 +597,15 @@
         <!-- Quick Demo Fill Helpers -->
         <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); text-align: center;">
           <p style="margin-bottom: 0.5rem; font-weight: 600;">Demo Accounts:</p>
-          <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
             <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('login-email').value='student@mcq.com'; document.getElementById('login-password').value='student123';">
               <i class="fas fa-user-graduate"></i> Student
             </button>
             <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('login-email').value='admin@mcq.com'; document.getElementById('login-password').value='admin123';">
               <i class="fas fa-shield-halved"></i> Admin
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="App.setupAdminFromKey()">
+              <i class="fas fa-key"></i> Setup Admin
             </button>
           </div>
         </div>

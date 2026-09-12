@@ -221,6 +221,28 @@ const App = {
     document.getElementById('modal-btn-confirm-submit')?.addEventListener('click', () => Exam.submitTest(false));
   },
 
+  async setupAdminFromKey() {
+    const verifyKey = prompt('Enter admin verification key to create the online admin account:');
+    if (!verifyKey) return;
+
+    try {
+      const data = await API.post('/api/auth/create-admin', {
+        verifyKey,
+        name: 'System Administrator',
+        email: 'admin@mcq.com'
+      });
+
+      if (data.success) {
+        this.showToast(`Admin ready: ${data.email} / ${data.password}`, 'success');
+        document.getElementById('login-email').value = data.email;
+        document.getElementById('login-password').value = data.password;
+        this.showAuthModal('login');
+      }
+    } catch (err) {
+      this.showToast(err.message || 'Admin setup failed.', 'danger');
+    }
+  },
+
   showView(viewId) {
     this.activeView = viewId;
 
