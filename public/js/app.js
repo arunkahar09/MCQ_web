@@ -53,6 +53,10 @@ const App = {
       case 'home':
         this.showView('view-home');
         break;
+      case 'tests':
+        this.showView('view-student-tests');
+        Student.loadAllTests();
+        break;
       case 'subjects':
         this.showView('view-student-subjects');
         Student.loadSubjects();
@@ -127,7 +131,7 @@ const App = {
   },
 
   handleGetStarted() {
-    location.hash = '#/subjects';
+    location.hash = '#/tests';
   },
 
   async checkActiveAttempt(autoResumeIfOnExamRoute = false) {
@@ -149,7 +153,7 @@ const App = {
       } else {
         if (banner) banner.style.display = 'none';
         if (autoResumeIfOnExamRoute) {
-          location.hash = '#/subjects';
+          location.hash = '#/tests';
         }
       }
     } catch (e) {
@@ -171,6 +175,7 @@ const App = {
       el.addEventListener('click', (e) => {
         const target = el.getAttribute('data-target-view');
         if (target === 'view-home') location.hash = '#/home';
+        if (target === 'view-student-tests') location.hash = '#/tests';
         if (target === 'view-student-subjects') location.hash = '#/subjects';
         if (target === 'view-student-history') location.hash = '#/history';
         if (target === 'view-admin') location.hash = '#/admin';

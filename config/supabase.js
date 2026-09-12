@@ -10,7 +10,7 @@ let isLive = false;
 // 1. Initialize Supabase Client
 function initSupabase() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
   if (supabaseUrl && supabaseKey && supabaseUrl.startsWith('http')) {
     try {
@@ -39,7 +39,8 @@ initSupabase();
  * High-performance Pure-JS local storage layer for development fallback.
  * (Zero native C++ modules, 100% serverless safe, no sqlite3 dependencies)
  */
-const localDataDir = process.env.LOCAL_DATA_PATH || path.join(os.tmpdir(), 'mcq_local_store');
+const isVercel = Boolean(process.env.VERCEL);
+const localDataDir = process.env.LOCAL_DATA_PATH || (isVercel ? path.join(os.tmpdir(), 'mcq_local_store') : path.join(__dirname, '..', 'data'));
 let persistenceDisabled = false;
 try {
   if (!fs.existsSync(localDataDir)) {
@@ -50,13 +51,22 @@ try {
 }
 
 const localStorePath = path.join(localDataDir, 'mcq_supabase_cache.json');
+const legacyStorePath = path.join(__dirname, '..', 'data', 'firestore_local_store.json');
 let memoryStore = {};
 
-if (!persistenceDisabled && fs.existsSync(localStorePath)) {
-  try {
-    memoryStore = JSON.parse(fs.readFileSync(localStorePath, 'utf8'));
-  } catch (e) {
-    memoryStore = {};
+if (!persistenceDisabled) {
+  if (fs.existsSync(localStorePath)) {
+    try {
+      memoryStore = JSON.parse(fs.readFileSync(localStorePath, 'utf8'));
+    } catch (e) {
+      memoryStore = {};
+    }
+  } else if (fs.existsSync(legacyStorePath)) {
+    try {
+      memoryStore = JSON.parse(fs.readFileSync(legacyStorePath, 'utf8'));
+    } catch (e) {
+      memoryStore = {};
+    }
   }
 }
 

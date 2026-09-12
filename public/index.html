@@ -30,6 +30,7 @@
 
     <!-- Student Navigation Links -->
     <ul class="nav-links" id="nav-student-links" style="display: none;">
+      <li><a href="#/tests" class="nav-link" data-target-view="view-student-tests"><i class="fas fa-clipboard-list"></i> Assigned Tests</a></li>
       <li><a href="#/subjects" class="nav-link" data-target-view="view-student-subjects"><i class="fas fa-layer-group"></i> Subjects</a></li>
       <li><a href="#/history" class="nav-link" data-target-view="view-student-history"><i class="fas fa-history"></i> My Results</a></li>
     </ul>
@@ -37,7 +38,8 @@
     <!-- Admin Navigation Links -->
     <ul class="nav-links" id="nav-admin-links" style="display: none;">
       <li><a href="#/admin" class="nav-link" data-target-view="view-admin"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>
-      <li><a href="#/subjects" class="nav-link" data-target-view="view-student-subjects"><i class="fas fa-eye"></i> Student View</a></li>
+      <li><a href="#/tests" class="nav-link" data-target-view="view-student-tests"><i class="fas fa-clipboard-list"></i> View All Tests</a></li>
+      <li><a href="#/subjects" class="nav-link" data-target-view="view-student-subjects"><i class="fas fa-eye"></i> Subjects</a></li>
     </ul>
 
     <!-- Navigation Actions -->
@@ -127,6 +129,29 @@
             <p>Comprehensive subject, test, 4-option question, and submission management tools.</p>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 1.5. VIEW: ALL ASSIGNED TESTS (STUDENT PORTAL) -->
+    <section id="view-student-tests" class="view-section">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 class="section-title"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Assigned & Available Tests</h2>
+          <p class="section-subtitle">Browse and attempt all MCQ assessments published by the administrator.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+          <div class="search-input-wrap" style="position: relative; min-width: 220px;">
+            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            <input type="text" id="all-tests-search" class="form-control" placeholder="Search tests..." style="padding-left: 36px; border-radius: var(--radius-full);" oninput="Student.handleSearchTests(this.value)">
+          </div>
+          <select id="all-tests-subject-filter" class="form-control" style="width: auto; min-width: 160px;" onchange="Student.handleSubjectFilter(this.value)">
+            <option value="">All Subjects</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tests-grid" id="all-tests-grid">
+        <!-- Injected via JavaScript -->
       </div>
     </section>
 

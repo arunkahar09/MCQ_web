@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS public.student_answers (
 );
 
 -- ====================================================================
--- Disable Row Level Security (RLS) for Backend API Full Access
+-- Disable Row Level Security (RLS) & Add Permissive Policies
 -- ====================================================================
 ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subjects DISABLE ROW LEVEL SECURITY;
@@ -102,6 +102,24 @@ ALTER TABLE public.tests DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.questions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.test_attempts DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.student_answers DISABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public access users" ON public.users;
+CREATE POLICY "Allow public access users" ON public.users FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access subjects" ON public.subjects;
+CREATE POLICY "Allow public access subjects" ON public.subjects FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access tests" ON public.tests;
+CREATE POLICY "Allow public access tests" ON public.tests FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access questions" ON public.questions;
+CREATE POLICY "Allow public access questions" ON public.questions FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access attempts" ON public.test_attempts;
+CREATE POLICY "Allow public access attempts" ON public.test_attempts FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public access answers" ON public.student_answers;
+CREATE POLICY "Allow public access answers" ON public.student_answers FOR ALL USING (true) WITH CHECK (true);
 
 -- ====================================================================
 -- Seed Initial Demo Users

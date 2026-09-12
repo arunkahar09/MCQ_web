@@ -7,7 +7,7 @@ const Auth = {
       API.setUser(data.user);
       App.showToast(`Account created successfully! Welcome, ${data.user.name}.`, 'success');
       App.updateNavigation();
-      location.hash = '#/subjects';
+      location.hash = '#/tests';
       return true;
     } catch (err) {
       App.showToast(err.message, 'danger');
@@ -28,7 +28,7 @@ const Auth = {
       } else {
         // Check for active attempt
         App.checkActiveAttempt();
-        location.hash = '#/subjects';
+        location.hash = '#/tests';
       }
       return true;
     } catch (err) {
