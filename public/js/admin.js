@@ -1070,6 +1070,8 @@ const Admin = {
         if (testFilter) {
           testFilter.value = test_id;
         }
+        await this.loadTests();
+        await this.loadStats();
         this.filterQuestionsByTest(test_id);
       } else {
         throw new Error(res.message || 'Import failed.');

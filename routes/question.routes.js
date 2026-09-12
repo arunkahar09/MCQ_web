@@ -115,7 +115,7 @@ router.post('/bulk', requireAdmin, async (req, res) => {
     const validOptions = ['A', 'B', 'C', 'D'];
     const validDifficulties = ['Easy', 'Medium', 'Hard'];
     const now = new Date().toISOString();
-    const insertedQuestions = [];
+    const validQuestionPayloads = [];
     const errors = [];
 
     for (let i = 0; i < questions.length; i++) {
@@ -147,7 +147,7 @@ router.post('/bulk', requireAdmin, async (req, res) => {
 
       const marks = parseInt(q.marks, 10) || 1;
 
-      const qData = {
+      validQuestionPayloads.push({
         test_id: String(test_id),
         question_text: String(q.question_text).trim(),
         option_a: String(q.option_a).trim(),
@@ -160,13 +160,10 @@ router.post('/bulk', requireAdmin, async (req, res) => {
         marks: marks,
         created_at: now,
         updated_at: now
-      };
-
-      const docRef = await db.collection('questions').add(qData);
-      insertedQuestions.push({ id: docRef.id, ...qData });
+      });
     }
 
-    if (insertedQuestions.length === 0) {
+    if (validQuestionPayloads.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'No valid questions could be imported.',
@@ -174,10 +171,25 @@ router.post('/bulk', requireAdmin, async (req, res) => {
       });
     }
 
+    // Fast bulk insertion in a single operation
+    await db.collection('questions').bulkAdd(validQuestionPayloads);
+
+    // Calculate total questions and marks for this test
+    const allTestQuestionsSnap = await db.collection('questions').where('test_id', '==', String(test_id)).get();
+    const totalQuestionsCount = allTestQuestionsSnap.docs.length;
+    const calculatedTotalMarks = allTestQuestionsSnap.docs.reduce((sum, d) => sum + (Number(d.data().marks) || 1), 0);
+
+    // Auto update test's total_marks
+    await db.collection('tests').doc(String(test_id)).update({
+      total_marks: calculatedTotalMarks || totalQuestionsCount,
+      updated_at: now
+    });
+
     return res.status(201).json({
       success: true,
-      message: `Successfully imported ${insertedQuestions.length} question${insertedQuestions.length === 1 ? '' : 's'}!`,
-      importedCount: insertedQuestions.length,
+      message: `Successfully imported ${validQuestionPayloads.length} question${validQuestionPayloads.length === 1 ? '' : 's'}!`,
+      importedCount: validQuestionPayloads.length,
+      totalTestQuestions: totalQuestionsCount,
       totalProcessed: questions.length,
       errors: errors.length > 0 ? errors : undefined
     });

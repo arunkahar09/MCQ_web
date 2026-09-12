@@ -7,7 +7,7 @@ require('dotenv').config();
 let supabaseClient = null;
 let isLive = false;
 
-// 1. Initialize Supabase Client
+// 1. Initialize Supabase Client with fast health check
 function initSupabase() {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
@@ -18,17 +18,38 @@ function initSupabase() {
         auth: {
           persistSession: false,
           autoRefreshToken: false
+        },
+        global: {
+          fetch: (...args) => {
+            // Set 3000ms max timeout on Supabase fetch calls to avoid long freezes
+            return fetch(args[0], { ...args[1], signal: AbortSignal.timeout(3000) });
+          }
         }
       });
       isLive = true;
-      console.log(`⚡ Connected to Supabase Cloud Database: ${supabaseUrl}`);
+      console.log(`⚡ Supabase Cloud Database configured: ${supabaseUrl}`);
+
+      // Fast async ping check
+      supabaseClient.from('tests').select('id').limit(1).then(({ error }) => {
+        if (error) {
+          console.warn('⚠️ Supabase ping failed, switching to local store:', error.message);
+          isLive = false;
+        } else {
+          isLive = true;
+          console.log('✅ Supabase Cloud Database ping verified active.');
+        }
+      }).catch(err => {
+        console.warn('⚠️ Supabase ping connection timeout, switching to local store:', err.message);
+        isLive = false;
+      });
+
       return { client: supabaseClient, isLive: true };
     } catch (err) {
       console.warn('⚠️ Supabase connection initialization warning:', err.message);
     }
   }
 
-  console.log('ℹ️ Supabase credentials not found in env. Using high-performance Pure-JS Local Store.');
+  console.log('ℹ️ Supabase credentials not active. Using high-performance Pure-JS Local Store.');
   isLive = false;
   return { client: null, isLive: false };
 }
@@ -103,6 +124,7 @@ class SupabaseDocRef {
         };
       } catch (err) {
         console.warn(`Supabase get error on ${this.table}/${this.id}:`, err.message);
+        isLive = false; // Fallback to local store
       }
     }
 
@@ -127,6 +149,7 @@ class SupabaseDocRef {
         return { writeTime: new Date() };
       } catch (err) {
         console.warn(`Supabase set error on ${this.table}/${this.id}:`, err.message);
+        isLive = false;
       }
     }
 
@@ -149,6 +172,7 @@ class SupabaseDocRef {
         return { writeTime: new Date() };
       } catch (err) {
         console.warn(`Supabase update error on ${this.table}/${this.id}:`, err.message);
+        isLive = false;
       }
     }
 
@@ -172,6 +196,7 @@ class SupabaseDocRef {
         return { writeTime: new Date() };
       } catch (err) {
         console.warn(`Supabase delete error on ${this.table}/${this.id}:`, err.message);
+        isLive = false;
       }
     }
 
@@ -249,17 +274,20 @@ class SupabaseQuery {
         if (error) throw error;
 
         const rows = data || [];
-        return {
-          empty: rows.length === 0,
-          size: rows.length,
-          docs: rows.map(r => ({
-            id: String(r.id),
-            exists: true,
-            data: () => ({ ...r })
-          }))
-        };
+        if (rows.length > 0 || !memoryStore[this.table] || Object.keys(memoryStore[this.table]).length === 0) {
+          return {
+            empty: rows.length === 0,
+            size: rows.length,
+            docs: rows.map(r => ({
+              id: String(r.id),
+              exists: true,
+              data: () => ({ ...r })
+            }))
+          };
+        }
       } catch (err) {
         console.warn(`Supabase query get error on ${this.table}:`, err.message);
+        isLive = false;
       }
     }
 
@@ -330,6 +358,36 @@ class SupabaseTableRef extends SupabaseQuery {
     const docRef = this.doc(id);
     await docRef.set(data);
     return docRef;
+  }
+
+  async bulkAdd(items) {
+    if (!Array.isArray(items) || items.length === 0) return [];
+    const now = Date.now();
+    const docs = items.map((data, index) => {
+      const id = data.id || `doc_${now}_${index}_` + Math.random().toString(36).substring(2, 7);
+      return { ...data, id };
+    });
+
+    if (isLive && supabaseClient) {
+      try {
+        const { error } = await supabaseClient
+          .from(this.table)
+          .upsert(docs, { onConflict: 'id' });
+        if (error) throw error;
+        return docs.map(d => this.doc(d.id));
+      } catch (err) {
+        console.warn(`Supabase bulkAdd error on ${this.table}:`, err.message);
+        isLive = false;
+      }
+    }
+
+    // Local Memory Store Fallback
+    if (!memoryStore[this.table]) memoryStore[this.table] = {};
+    for (const d of docs) {
+      memoryStore[this.table][d.id] = d;
+    }
+    saveMemoryStore();
+    return docs.map(d => this.doc(d.id));
   }
 }
 
